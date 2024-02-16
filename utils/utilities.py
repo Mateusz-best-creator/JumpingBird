@@ -1,4 +1,5 @@
 import pygame
+import time
 
 
 def check_if_collision(bird_coordinates, fruits_data, screen):
@@ -55,9 +56,16 @@ BLACK = (0, 0, 0)
 
 
 # Function to display text for a specified duration
-def display_text(message, font_size, x, y, screen):
-    font = pygame.font.SysFont(None, font_size)
-    text = font.render(message, True, BLACK)
+def display_text(message, font_size, x, y, screen, font, color=BLACK):
+    # Set the font size
+    font = pygame.font.Font(None, font_size)
+
+    # Render the text with the specified font size
+    text = font.render(message, True, color)
     text_rect = text.get_rect(center=(x, y))
     screen.blit(text, text_rect)
     pygame.display.update()
+
+
+def has_time_passed(start_time, border):
+    return time.time() - start_time >= border

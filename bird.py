@@ -2,10 +2,6 @@ import pygame
 import time
 
 
-def has_time_passed(start_time, border):
-    return time.time() - start_time >= border
-
-
 class Bird:
     def __init__(self, width, height, screen, filename_left="./images/bird_left.png", filename_right="./images/bird_right.png"):
         self.width = width
@@ -18,22 +14,20 @@ class Bird:
             pygame.image.load(filename_left).convert_alpha(), (width, height))
 
         self.screen = screen
-        self.bird_pos = pygame.Vector2(
-            screen.get_width() / 2, 0)
+        self.bird_pos = pygame.Vector2(screen.get_width() / 2, 0)
 
         self.vel_y = 0  # Vertical velocity
         self.gravity = 700  # Gravity value (adjust as needed)
-        self.last_time = time.time()
+        self.last_jump_time = 0
 
         self.direction = "right"
 
     def jump(self):
-        self.vel_y = -700
+        self.vel_y = -500
+        self.last_jump_time = time.time()
 
     def move(self, keys, dt):
-
-        current_time = time.time()
-        self.bird_pos.y += 250 * dt
+        self.bird_pos.y += self.vel_y * dt
 
         if keys[pygame.K_a]:
             self.bird_pos.x -= 300 * dt
@@ -41,21 +35,17 @@ class Bird:
         if keys[pygame.K_d]:
             self.bird_pos.x += 300 * dt
             self.direction = "right"
-        # Player can click to jump every 0.5 second
-        if keys[pygame.K_SPACE] and has_time_passed(self.last_time, 0.5):
-            self.last_time = current_time
+
+        # Player can jump every 0.5 second
+        if keys[pygame.K_SPACE] and time.time() - self.last_jump_time >= 0.5:
             self.jump()
 
-        # Update the bird's vertical position based on its velocity
+        # Apply gravity
         self.vel_y += self.gravity * dt
-        self.bird_pos.y += self.vel_y * dt
-
-        if (self.bird_pos.y >= self.screen.get_height()):
-            self.bird_pos.y = 0
-        print(self.bird_pos.x)
-        if (self.bird_pos.x > self.screen.get_width()):
+        # Screen edge handling
+        if self.bird_pos.x > self.screen.get_width():
             self.bird_pos.x = 0
-        elif (self.bird_pos.x < -30):
+        elif self.bird_pos.x < -self.width:
             self.bird_pos.x = self.screen.get_width()
 
     def display(self):

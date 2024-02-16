@@ -1,7 +1,7 @@
 import pygame
 import random
 import time
-from bird import has_time_passed
+from utils.utilities import has_time_passed
 
 fruit_data = {
     1: {"filename": "./images/fruit1.png", "name": "apple", "value": 10},
@@ -32,9 +32,8 @@ class Fruits:
             self.last_time = current_time
             new_index = len(self.fruits)
             new_x_coordinate = random.uniform(20, self.screen_width - 100)
-            new_y_coordinate = random.uniform(20, self.screen_height - 100)
+            new_y_coordinate = random.uniform(100, self.screen_height - 100)
             type = random.choice(list(fruit_data.keys()))
-            print("New index: ", new_index)
             self.fruits.append({"type": type, "index": new_index,
                                 "x_cor": new_x_coordinate, "y_cor": new_y_coordinate})
 
