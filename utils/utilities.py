@@ -56,9 +56,9 @@ BLACK = (0, 0, 0)
 
 
 # Function to display text for a specified duration
-def display_text(message, font_size, x, y, screen, font, color=BLACK):
+def display_text(message, font_size, x, y, screen, font_path, color=BLACK):
     # Set the font size
-    font = pygame.font.Font(None, font_size)
+    font = pygame.font.Font(font_path, font_size)
 
     # Render the text with the specified font size
     text = font.render(message, True, color)
