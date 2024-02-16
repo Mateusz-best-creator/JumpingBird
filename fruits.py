@@ -42,3 +42,4 @@ class Fruits:
         for fruit in self.fruits:
             self.screen.blit(self.fruit_images[fruit["type"]],
                              (fruit["x_cor"], fruit["y_cor"]))
+        self.current_fruits = len(self.fruits)
