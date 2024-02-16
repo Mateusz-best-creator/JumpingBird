@@ -37,7 +37,7 @@ class Bird:
             self.direction = "right"
 
         # Player can jump every 0.5 second
-        if keys[pygame.K_SPACE] and time.time() - self.last_jump_time >= 0.5:
+        if keys[pygame.K_SPACE] and time.time() - self.last_jump_time >= 0.5 and self.bird_pos.y > 150:
             self.jump()
 
         # Apply gravity
