@@ -1,6 +1,7 @@
 import pygame
 from bird import Bird
 from fruits import Fruits
+from collisions import check_if_collision
 
 
 class Game:
@@ -21,7 +22,7 @@ class Game:
         self.rect_color = (139, 69, 19)  # Brown color (RGB)
 
         # Create bird instance
-        self.bird = Bird(150, 150, self.screen)
+        self.bird = Bird(40, 40, self.screen)
 
         # Fruits
         self.fruits = Fruits(self.screen)
@@ -48,11 +49,9 @@ class Game:
             self.fruits.generate()
             self.fruits.display()
 
+            check_if_collision(self.bird.bird_pos, self.fruits.fruits)
+
             # Draw rectangles that will be the borders of the screen
-            pygame.draw.rect(self.screen, self.rect_color,
-                             (0, 0, 15, self.screen_height))
-            pygame.draw.rect(self.screen, self.rect_color,
-                             (self.screen_width - 15, 0, 15, self.screen_height))
             pygame.draw.rect(self.screen, self.rect_color,
                              (0, 0, self.screen_width, 15))
             pygame.draw.rect(self.screen, self.rect_color,

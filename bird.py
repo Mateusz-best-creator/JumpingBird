@@ -7,19 +7,19 @@ def has_time_passed(start_time, border):
 
 
 class Bird:
-    def __init__(self, width, height, screen, filename_left="./images/bird_left.jpg", filename_right="./images/bird_right.jpg"):
+    def __init__(self, width, height, screen, filename_left="./images/bird_left.png", filename_right="./images/bird_right.png"):
         self.width = width
         self.height = height
         self.filename_right = filename_right
         self.filename_left = filename_left
         self.bird_image_right = pygame.transform.scale(
-            pygame.image.load(filename_right).convert(), (width, height))
+            pygame.image.load(filename_right).convert_alpha(), (width, height))
         self.bird_image_left = pygame.transform.scale(
-            pygame.image.load(filename_left).convert(), (width, height))
+            pygame.image.load(filename_left).convert_alpha(), (width, height))
 
         self.screen = screen
         self.bird_pos = pygame.Vector2(
-            screen.get_width() / 2, screen.get_height() / 2)
+            screen.get_width() / 2, 0)
 
         self.vel_y = 0  # Vertical velocity
         self.gravity = 700  # Gravity value (adjust as needed)
@@ -52,6 +52,11 @@ class Bird:
 
         if (self.bird_pos.y >= self.screen.get_height()):
             self.bird_pos.y = 0
+        print(self.bird_pos.x)
+        if (self.bird_pos.x > self.screen.get_width()):
+            self.bird_pos.x = 0
+        elif (self.bird_pos.x < -30):
+            self.bird_pos.x = self.screen.get_width()
 
     def display(self):
         if self.direction == "right":
