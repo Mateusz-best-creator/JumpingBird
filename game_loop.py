@@ -7,9 +7,9 @@ from utils.utilities import check_if_collision, display_text
 import textwrap
 
 levels_data = {
-    1: {"background": "./images/background_level_1.png", "threshold": 1000},
-    2: {"background": "./images/background_level_2.png", "threshold": 7000},
-    3: {"background": "./images/background_level_3.png", "threshold": 10000}
+    1: {"background": "./images/background_level_1.png", "threshold": 100},
+    2: {"background": "./images/background_level_2.png", "threshold": 100},
+    3: {"background": "./images/background_level_3.png", "threshold": 100}
 }
 
 
@@ -57,6 +57,8 @@ class Game:
         # Load arrow image
         self.arrow_image = pygame.transform.scale(
             pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
+        self.WHITE = (255, 255, 255)
+        self.BLACK = (0, 0, 0)
 
     def init_textures(self):
         # Create new instances
@@ -68,7 +70,6 @@ class Game:
             self.screen, self.screen_width, self.screen_height)
 
     def draw_menu(self, options, option_selected):
-        WHITE = (255, 255, 255)
         rect_width = 200
         rect_height = 50
         rect_spacing = 50  # Spacing between rectangles
@@ -78,14 +79,15 @@ class Game:
         # Calculate the starting y-coordinate for the first rectangle
         start_y = (self.screen_height - total_height) // 2 + 100
 
-        self.screen.blit(self.start_background_image, (0, 0))
+        self.screen.blit(pygame.image.load(
+            "./images/start_background.png").convert(), (0, 0))
         display_text("Flying Bird", 110, self.screen_width / 2,
                      100, self.screen, self.title_font, (0, 0, 0))
 
         for i in range(num_options):
             rect_y = start_y + i * (rect_height + rect_spacing)
-            pygame.draw.rect(self.screen, WHITE, (self.screen_width //
-                                                  2 - rect_width // 2, rect_y, rect_width, rect_height))
+            pygame.draw.rect(self.screen, self.WHITE, (self.screen_width //
+                                                       2 - rect_width // 2, rect_y, rect_width, rect_height))
 
             # Calculate position for text to be centered on the rectangle
             text_x = self.screen_width // 2
@@ -100,10 +102,15 @@ class Game:
         self.screen.blit(self.arrow_image, (70, arrow_y))
         pygame.display.update()
 
-    def congratulations_page(self, level_index):
-        time.sleep(3000)
+    def congratulations_page(self, level_index, level_data, color=None):
+        if not color:
+            color = self.WHITE
+        image = self.start_background_image = pygame.image.load(
+            level_data[level_index]["background"]).convert()
+        self.screen.blit(image, (0, 0))
         display_text(f"Congratulations for completing level {level_index}!",
-                     64, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font)
+                     32, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font, color)
+        time.sleep(3)
 
     def check_if_update(self, update, initial, option, texts):
         rect_width = 200
@@ -159,13 +166,40 @@ class Game:
                         if option == 1:
                             self.running = True
                             self.init_textures()
-                            self.start_counter(levels_data[level])
                             return_value = self.game_loop(levels_data[level])
                             if return_value:
-                                self.congratulations_page(level)
+                                self.congratulations_page(level, levels_data)
                                 option = 1
-                                self.start_counter(levels_data[level])
-                                # level = level % 3 + 1
+                                level = level % 3 + 1
+
+                                # Absolutely ugly I am sorry
+                                self.init_textures()
+                                self.bombs.items.clear()
+                                self.fruits.fruits.clear()
+                                self.tnts.items.clear()
+                                return_value = self.game_loop(
+                                    levels_data[2])
+                                if return_value:
+                                    self.congratulations_page(
+                                        level, levels_data)
+                                    option = 1
+                                    level = level % 3 + 1
+
+                                    self.bombs.items.clear()
+                                    self.fruits.fruits.clear()
+                                    self.tnts.items.clear()
+                                    self.init_textures()
+                                    return_value = self.game_loop(
+                                        levels_data[level])
+
+                                    if return_value:
+                                        self.congratulations_page(
+                                            level, levels_data)
+                                        option = 1
+                                        level = level % 3 + 1
+                                        self.screen.blit(
+                                            self.start_background_image, (0, 0))
+
                             update = True
                         elif option == 2:
                             self.instructions_page()
@@ -243,7 +277,7 @@ class Game:
                     if event.key == pygame.K_RETURN:
                         return
 
-    def continue_page(self):
+    def continue_page(self, level_data):
         options = ["Play Again", "Main Page", "Quit"]
         option_selected = 1
         updated = True
@@ -274,6 +308,7 @@ class Game:
                             len(options), option_selected + 1)
 
     def game_loop(self, level_data):
+        self.start_counter(level_data)
         threshold = level_data["threshold"]
         background_image = pygame.image.load(
             level_data["background"]).convert()
@@ -311,11 +346,10 @@ class Game:
             lost_tnt = check_if_collision(
                 self.bird.bird_pos, self.tnts.items)
             if lost_bomb != 0 or lost_tnt != 0:
-                continue_result = self.continue_page()
+                continue_result = self.continue_page(level_data)
                 if continue_result == 1:
                     self.init_textures()
-                elif continue_result == 2:
-                    return 2
+                    self.start_counter(level_data)
                 else:
                     self.running = False
                     return False
@@ -343,15 +377,14 @@ class Game:
 
             # Based on our height decide if we have lost
             if self.bird.bird_pos.y >= self.screen_height:
-                continue_result = self.continue_page()
+                continue_result = self.continue_page(level_data)
                 if continue_result == 1:
                     self.init_textures()
-                elif continue_result == 2:
-                    return 2
+                    self.start_counter(level_data)
                 else:
                     self.running = False
                     return False
 
             # Decide if we have won
-            if self.bird.points > 1000:
+            if self.bird.points > threshold:
                 return True
