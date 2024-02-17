@@ -19,6 +19,7 @@ class Bird:
         self.vel_y = 0  # Vertical velocity
         self.gravity = 700  # Gravity value (adjust as needed)
         self.last_jump_time = 0
+        self.points = 0
 
         self.direction = "right"
 

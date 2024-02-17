@@ -34,11 +34,8 @@ class Bombs(Obstacles):
         self.max_bombs = max_bombs
 
     def generate(self, bird_position):
-        if self.current_items >= self.max_bombs or time.time() - self.last_time < 5:
-            return
         current_time = time.time()
-        print(current_time)
-        if has_time_passed(self.last_time, self.delta):
+        if current_time - self.last_time >= self.delta and self.current_items < self.max_bombs:
             self.last_time = current_time
             # Minimum distance between bomb and bird
             min_distance = 100

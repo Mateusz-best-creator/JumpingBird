@@ -50,7 +50,6 @@ class Game:
 
         self.casual_font = "./fonts/font.ttf"
         self.title_font = "./fonts/title.ttf"
-        self.points = 0
 
     def init_textures(self):
         # Create new instances
@@ -97,6 +96,10 @@ class Game:
             (rect_height + rect_spacing) + rect_height // 2 - 35
         self.screen.blit(arrow_image, (70, arrow_y))
         pygame.display.update()
+
+    def congratulations_page(self, level_index):
+        display_text(f"Congratulations for completing level {level_index}!",
+                     64, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font)
 
     def start_page(self):
         option = 1
@@ -153,12 +156,10 @@ class Game:
                             self.running = True
                             self.init_textures()
                             return_value = self.game_loop()
-                            update = True
                             if not return_value:
                                 option = self.continue_page()
                             else:
-                                # Player won
-                                pass
+                                self.congratulations_page(1)
                             update = True
                         elif option == 2:
                             pass
@@ -263,7 +264,7 @@ class Game:
                         option_selected = min(
                             len(options), option_selected + 1)
 
-    def game_loop(self):
+    def game_loop(self, threshold=5000):
         self.start_counter()
 
         while self.running:
@@ -306,14 +307,14 @@ class Game:
             if fruit_collision > 0:
                 self.message = fruit_collision
                 self.collision_time = time.time()
-                self.points += fruit_collision
+                self.bird.points += fruit_collision
 
             if self.message_duration > self.current_time - self.collision_time and self.message != 0:
                 display_text(str(self.message), 25, self.bird.bird_pos.x + 20,
                              self.bird.bird_pos.y - 20, self.screen, self.casual_font, (255, 255, 255))
             else:
                 self.message = 0
-            display_text(f"{self.points}/5000", 50, self.screen_width /
+            display_text(f"{self.bird.points}/{threshold}", 50, self.screen_width /
                          2 + 20, 30, self.screen, self.casual_font)
 
             keys = pygame.key.get_pressed()
@@ -324,6 +325,10 @@ class Game:
             self.dt = self.clock.tick(60) / 1000
 
             # Based on our height decide if we have lost
-            if (self.bird.bird_pos.y >= self.screen_height):
+            if self.bird.bird_pos.y >= self.screen_height:
                 self.running = False
                 return False
+
+            # Decide if we have won
+            if self.bird.points > 1000:
+                return True
