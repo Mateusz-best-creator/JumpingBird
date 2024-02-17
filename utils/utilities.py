@@ -2,50 +2,50 @@ import pygame
 import time
 
 
-def check_if_collision(bird_coordinates, fruits_data, screen):
-    fruits_to_remove = []
+def check_if_collision(bird_coordinates, items_data):
+    items_to_remove = []
 
     collision = False
 
-    for fruit in fruits_data:
+    for item in items_data:
         # Left side collision
-        if (bird_coordinates.x + 40 > fruit["x_cor"] and
-            bird_coordinates.x < fruit["x_cor"] and
-            bird_coordinates.y + 40 > fruit["y_cor"] and
-                bird_coordinates.y < fruit["y_cor"] + 40):
-            fruits_to_remove.append(fruit)
+        if (bird_coordinates.x + 40 > item["x_cor"] and
+            bird_coordinates.x < item["x_cor"] and
+            bird_coordinates.y + 40 > item["y_cor"] and
+                bird_coordinates.y < item["y_cor"] + 40):
+            items_to_remove.append(item)
             collision = True
 
         # Right side collision
-        elif (bird_coordinates.x < fruit["x_cor"] + 40 and
-              bird_coordinates.x + 40 > fruit["x_cor"] + 40 and
-              bird_coordinates.y + 40 > fruit["y_cor"] and
-                bird_coordinates.y < fruit["y_cor"] + 40):
-            fruits_to_remove.append(fruit)
+        elif (bird_coordinates.x < item["x_cor"] + 40 and
+              bird_coordinates.x + 40 > item["x_cor"] + 40 and
+              bird_coordinates.y + 40 > item["y_cor"] and
+                bird_coordinates.y < item["y_cor"] + 40):
+            items_to_remove.append(item)
             collision = True
 
         # Top side collision
-        elif (bird_coordinates.x + 40 > fruit["x_cor"] and
-              bird_coordinates.x < fruit["x_cor"] + 40 and
-              bird_coordinates.y + 40 > fruit["y_cor"] and
-                bird_coordinates.y < fruit["y_cor"]):
-            fruits_to_remove.append(fruit)
+        elif (bird_coordinates.x + 40 > item["x_cor"] and
+              bird_coordinates.x < item["x_cor"] + 40 and
+              bird_coordinates.y + 40 > item["y_cor"] and
+                bird_coordinates.y < item["y_cor"]):
+            items_to_remove.append(item)
             collision = True
 
         # Bottom side collision
-        elif (bird_coordinates.x + 40 > fruit["x_cor"] and
-              bird_coordinates.x < fruit["x_cor"] + 40 and
-              bird_coordinates.y < fruit["y_cor"] + 40 and
-                bird_coordinates.y + 40 > fruit["y_cor"] + 40):
-            fruits_to_remove.append(fruit)
+        elif (bird_coordinates.x + 40 > item["x_cor"] and
+              bird_coordinates.x < item["x_cor"] + 40 and
+              bird_coordinates.y < item["y_cor"] + 40 and
+                bird_coordinates.y + 40 > item["y_cor"] + 40):
+            items_to_remove.append(item)
             collision = True
 
     value = 0
 
-    # Remove collided fruits
-    for fruit in fruits_to_remove:
-        fruits_data.remove(fruit)
-        value += fruit["type"] * 100
+    # Remove collided items
+    for item in items_to_remove:
+        items_data.remove(item)
+        value += item["type"] * 100
 
     return value
 

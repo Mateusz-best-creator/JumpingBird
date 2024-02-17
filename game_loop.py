@@ -2,6 +2,7 @@ import pygame
 import time
 from bird import Bird
 from fruits import Fruits
+from bombs import Bombs
 from utils.utilities import check_if_collision, display_text
 import textwrap
 
@@ -28,6 +29,9 @@ class Game:
 
         # Fruits
         self.fruits = Fruits(self.screen)
+
+        # Bombs
+        self.bombs = Bombs(self.screen, self.screen_width, self.screen_height)
 
         # Setting window title
         pygame.display.set_caption('Flying Bird')
@@ -205,10 +209,15 @@ class Game:
             # Draw & generate fruits textures
             self.fruits.generate()
             self.fruits.display()
+            self.bombs.generate(self.bird.bird_pos)
+            self.bombs.display()
+            self.bombs.update()
 
             # Check for collision
-            result = check_if_collision(
-                self.bird.bird_pos, self.fruits.fruits, self.screen)
+            result = check_if_collision(self.bird.bird_pos, self.fruits.fruits)
+            lost = check_if_collision(self.bird.bird_pos, self.bombs.bombs)
+            if lost != 0:
+                self.running = False
 
             # Display message if collision result is greater than 0 and for the specified duration
             if result > 0:
@@ -221,8 +230,8 @@ class Game:
                              self.bird.bird_pos.y - 20, self.screen, self.casual_font, (255, 255, 255))
             else:
                 self.message = 0
-            display_text(f"{self.points}", 50, self.screen_width /
-                         2, 30, self.screen, self.casual_font)
+            display_text(f"{self.points}/5000", 50, self.screen_width /
+                         2 + 20, 30, self.screen, self.casual_font)
 
             keys = pygame.key.get_pressed()
             self.bird.move(keys, self.dt)
