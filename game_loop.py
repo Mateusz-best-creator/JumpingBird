@@ -50,6 +50,9 @@ class Game:
 
         self.casual_font = "./fonts/font.ttf"
         self.title_font = "./fonts/title.ttf"
+        # Load arrow image
+        self.arrow_image = pygame.transform.scale(
+            pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
 
     def init_textures(self):
         # Create new instances
@@ -71,10 +74,6 @@ class Game:
         # Calculate the starting y-coordinate for the first rectangle
         start_y = (self.screen_height - total_height) // 2 + 100
 
-        # Load arrow image
-        arrow_image = pygame.transform.scale(
-            pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
-
         self.screen.blit(self.start_background_image, (0, 0))
         display_text("Flying Bird", 110, self.screen_width / 2 -
                      20, 100, self.screen, self.title_font, (0, 0, 0))
@@ -94,18 +93,14 @@ class Game:
         # Draw arrow next to selected option
         arrow_y = start_y + (option_selected - 1) * \
             (rect_height + rect_spacing) + rect_height // 2 - 35
-        self.screen.blit(arrow_image, (70, arrow_y))
+        self.screen.blit(self.arrow_image, (70, arrow_y))
         pygame.display.update()
 
     def congratulations_page(self, level_index):
         display_text(f"Congratulations for completing level {level_index}!",
                      64, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font)
 
-    def start_page(self):
-        option = 1
-        run = True
-        texts = ["Play", "Instructions", "Quit"]
-
+    def check_if_update(self, update, initial, option, texts):
         rect_width = 200
         rect_height = 50
         rect_spacing = 50  # Spacing between rectangles
@@ -115,36 +110,38 @@ class Game:
 
         # Calculate the starting y-coordinate for the first rectangle
         start_y = (self.screen_height - total_height) // 2 + 150
+        if update or initial:
+            self.screen.blit(self.start_background_image, (0, 0))
+            display_text("Flying Bird", 110, self.screen_width / 2,
+                         100, self.screen, self.title_font, (0, 0, 0))
+            extra = 0
+            if option == 0:
+                extra = 1
+            self.screen.blit(self.arrow_image, (70, start_y + (option - 1 + extra) *
+                                                (rect_height + rect_spacing) + rect_height // 2 - 35))
+            for i in range(num_rectangles):
+                rect_y = start_y + i * (rect_height + rect_spacing)
+                pygame.draw.rect(self.screen, (255, 255, 255), (self.screen_width //
+                                                                2 - rect_width // 2, rect_y, rect_width, rect_height))
+
+                # Calculate position for text to be centered on the rectangle
+                text_x = self.screen_width // 2
+                text_y = rect_y + rect_height // 2
+
+                display_text(texts[i], 30, text_x, text_y,
+                             self.screen, self.casual_font, (0, 0, 0))
+            pygame.display.update()
+
+    def start_page(self):
+        texts = ["Play", "Instructions", "Quit"]
+        option = 1
+        run = True
         update = False
         initial = True
 
-        # Load arrow image
-        arrow_image = pygame.transform.scale(
-            pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
-
         while run:
-            if update or initial:
-                self.screen.blit(self.start_background_image, (0, 0))
-                display_text("Flying Bird", 110, self.screen_width / 2,
-                             100, self.screen, self.title_font, (0, 0, 0))
-                initial = update = False
-                extra = 0
-                if option == 0:
-                    extra = 1
-                self.screen.blit(arrow_image, (70, start_y + (option - 1 + extra) *
-                                 (rect_height + rect_spacing) + rect_height // 2 - 35))
-                for i in range(num_rectangles):
-                    rect_y = start_y + i * (rect_height + rect_spacing)
-                    pygame.draw.rect(self.screen, (255, 255, 255), (self.screen_width //
-                                                                    2 - rect_width // 2, rect_y, rect_width, rect_height))
-
-                    # Calculate position for text to be centered on the rectangle
-                    text_x = self.screen_width // 2
-                    text_y = rect_y + rect_height // 2
-
-                    display_text(texts[i], 30, text_x, text_y,
-                                 self.screen, self.casual_font, (0, 0, 0))
-                pygame.display.update()
+            self.check_if_update(update, initial, option, texts)
+            initial = update = False
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -162,10 +159,6 @@ class Game:
                                 self.congratulations_page(1)
                             update = True
                         elif option == 2:
-                            pass
-                        elif option == 3:
-                            pass
-                        elif option == 4:
                             self.instructions_page()
                             update = True
                         else:
@@ -174,7 +167,7 @@ class Game:
                         option = max(1, option - 1)
                         update = True
                     elif event.key == pygame.K_DOWN:
-                        option = min(num_rectangles, option + 1)
+                        option = min(len(texts), option + 1)
                         update = True
 
     def start_counter(self):
@@ -214,6 +207,7 @@ class Game:
             "Instructions", True, (255, 255, 255))
         instructions_rect = instructions_surface.get_rect(
             center=(self.screen_width // 2, 150))
+        pygame.draw.rect(self.screen, (169, 169, 169), (100, 50, 400, 680))
         self.screen.blit(instructions_surface, instructions_rect)
 
         for i, line in enumerate(lines):
@@ -224,7 +218,6 @@ class Game:
 
         # Update the display
         pygame.display.flip()
-
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
