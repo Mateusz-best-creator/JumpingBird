@@ -3,6 +3,7 @@ import time
 from bird import Bird
 from fruits import Fruits
 from utils.utilities import check_if_collision, display_text
+import textwrap
 
 
 class Game:
@@ -74,7 +75,7 @@ class Game:
                 display_text("Flying Bird", 110, self.screen_width / 2 -
                              20, 100, self.screen, self.title_font, (0, 0, 0))
                 initial = update = False
-                self.screen.blit(arrow_image, (70, start_y + option *
+                self.screen.blit(arrow_image, (70, start_y + (option - 1) *
                                  (rect_height + rect_spacing) + rect_height // 2 - 35))
                 for i in range(num_rectangles):
                     rect_y = start_y + i * (rect_height + rect_spacing)
@@ -95,15 +96,22 @@ class Game:
                     return
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        run = False
+                        if option == 1:
+                            self.game_loop()
+                            update = True
+                        elif option == 2:
+                            pass
+                        elif option == 3:
+                            pass
+                        else:
+                            self.instructions_page()
+                            update = True
                     elif event.key == pygame.K_UP:
-                        option = max(0, option - 1)
+                        option = max(1, option - 1)
                         update = True
                     elif event.key == pygame.K_DOWN:
-                        option = min(num_rectangles - 1, option + 1)
+                        option = min(num_rectangles, option + 1)
                         update = True
-
-        self.game_loop()
 
     def start_counter(self):
         # Fully transparent (RGBA color with alpha value 0)
@@ -130,6 +138,50 @@ class Game:
             display_text(str(time_to_display), 100, self.screen_width /
                          2, self.screen_height / 2, self.screen, self.casual_font)
             pygame.display.update()  # Update the display outside the loop
+
+    def instructions_page(self):
+        WHITE = (255, 255, 255)
+        GRAY = (110, 111, 112)
+        # Text
+        instructions_text = "Instructions"
+        lines = ["Welcome in our Flying Bird game.", "In this game you have to fly with the bird", "and grab as much fruits as you can.",
+                 "Try to avoid obstacles and collect", "power-ups to increase your score.", "Use the a, w, s, d keys to control the bird's movement.",
+                 "Press the spacebar to make the bird flap", "its wings and gain altitude.", "Good luck and have fun playing!"]
+
+        # Calculate rectangle dimensions
+        rect_width = int(self.screen_width * 0.75)
+        rect_height = self.screen_height - 100
+        rect_x = (self.screen_width - rect_width) // 2
+        rect_y = (self.screen_height - rect_height) // 2
+
+        # Draw rectangle
+        pygame.draw.rect(
+            self.screen, GRAY, (rect_x, rect_y, rect_width, rect_height))
+
+        # Render and blit text
+        font = pygame.font.Font(self.title_font, 65)
+        instructions_surface = font.render(instructions_text, True, WHITE)
+        instructions_rect = instructions_surface.get_rect(
+            center=(self.screen_width // 2, rect_y + 50))
+        self.screen.blit(instructions_surface, instructions_rect)
+
+        for i, line in enumerate(lines):
+            display_text(line, 15, self.screen_width / 2 - len(line) / 2 + 30,
+                         250 + i * 25, self.screen, self.casual_font, WHITE)
+        display_text("Press enter to go back to the main page", 15, self.screen_width / 2 - len(line) / 2 + 20,
+                     710, self.screen, self.casual_font, WHITE)
+
+        # Update the display
+        pygame.display.flip()
+
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        running = False
 
     def game_loop(self):
         self.start_counter()
