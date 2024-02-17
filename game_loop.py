@@ -52,10 +52,20 @@ class Game:
         self.title_font = "./fonts/title.ttf"
         self.points = 0
 
+    def init_textures(self):
+        # Create new instances
+        self.bird = Bird(40, 40, self.screen)
+        self.fruits = Fruits(self.screen)
+        self.bombs = Bombs(
+            self.screen, self.screen_width, self.screen_height)
+        self.tnts = TNT(
+            self.screen, self.screen_width, self.screen_height)
+
     def start_page(self):
         option = 1
         run = True
-        texts = ["Play", "Authenticate", "Hall Of Fame", "Instructions"]
+        texts = ["Play", "Authenticate",
+                 "Hall Of Fame", "Instructions", "Quit"]
 
         rect_width = 200
         rect_height = 50
@@ -65,7 +75,7 @@ class Game:
         total_height = num_rectangles * (rect_height + rect_spacing)
 
         # Calculate the starting y-coordinate for the first rectangle
-        start_y = (self.screen_height - total_height) // 2
+        start_y = (self.screen_height - total_height) // 2 + 100
         update = False
         initial = True
 
@@ -102,22 +112,20 @@ class Game:
                     if event.key == pygame.K_RETURN:
                         if option == 1:
                             self.running = True
-                            # Create new instances
-                            self.bird = Bird(40, 40, self.screen)
-                            self.fruits = Fruits(self.screen)
-                            self.bombs = Bombs(
-                                self.screen, self.screen_width, self.screen_height)
-                            self.tnts = TNT(
-                                self.screen, self.screen_width, self.screen_height)
-                            self.game_loop()
+                            self.init_textures()
+                            return_value = self.game_loop()
+                            if not return_value:
+                                self.continue_page()
                             update = True
                         elif option == 2:
                             pass
                         elif option == 3:
                             pass
-                        else:
+                        elif option == 4:
                             self.instructions_page()
                             update = True
+                        else:
+                            pygame.quit()
                     elif event.key == pygame.K_UP:
                         option = max(1, option - 1)
                         update = True
@@ -157,7 +165,7 @@ class Game:
         # Text
         instructions_text = "Instructions"
         lines = ["Welcome in our Flying Bird game.", "In this game you have to fly with the bird", "and grab as much fruits as you can.",
-                 "Try to avoid obstacles and collect", "power-ups to increase your score.", "Use the a, w, s, d keys to control the bird's movement.",
+                 "Try to avoid obstacles and collect", "power-ups to increase your score.", "Use arrow( ←, → ) keys to control the bird's movement.",
                  "Press the spacebar to make the bird flap", "its wings and gain altitude.", "Good luck and have fun playing!"]
 
         # Calculate rectangle dimensions
@@ -194,6 +202,70 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         running = False
+
+    def continue_page(self):
+        option = 1
+        run = True
+        texts = ["Play Again", "Main Page", "Quit"]
+
+        rect_width = 200
+        rect_height = 50
+        rect_spacing = 50  # Spacing between rectangles
+        num_rectangles = len(texts)
+        # Calculate total height needed for all rectangles
+        total_height = num_rectangles * (rect_height + rect_spacing)
+
+        # Calculate the starting y-coordinate for the first rectangle
+        start_y = (self.screen_height - total_height) // 2 + 100
+        update = False
+        initial = True
+
+        # Load arrow image
+        arrow_image = pygame.transform.scale(
+            pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
+
+        while run:
+            if update or initial:
+                self.screen.blit(self.start_background_image, (0, 0))
+                display_text("Flying Bird", 110, self.screen_width / 2 -
+                             20, 100, self.screen, self.title_font, (0, 0, 0))
+                initial = update = False
+                self.screen.blit(arrow_image, (70, start_y + (option - 1) *
+                                               (rect_height + rect_spacing) + rect_height // 2 - 35))
+                for i in range(num_rectangles):
+                    rect_y = start_y + i * (rect_height + rect_spacing)
+                    pygame.draw.rect(self.screen, (255, 255, 255), (self.screen_width //
+                                                                    2 - rect_width // 2, rect_y, rect_width, rect_height))
+
+                    # Calculate position for text to be centered on the rectangle
+                    text_x = self.screen_width // 2
+                    text_y = rect_y + rect_height // 2
+
+                    display_text(texts[i], 30, text_x, text_y,
+                                 self.screen, self.casual_font, (0, 0, 0))
+                pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        if option == 1:
+                            self.running = True
+                            self.init_textures()
+                            self.game_loop()
+                            update = True
+                        elif option == 2:
+                            return
+                        elif option == 3:
+                            pygame.quit()
+                    elif event.key == pygame.K_UP:
+                        option = max(1, option - 1)
+                        update = True
+                    elif event.key == pygame.K_DOWN:
+                        option = min(num_rectangles, option + 1)
+                        update = True
 
     def game_loop(self):
         self.start_counter()
@@ -232,6 +304,7 @@ class Game:
                 self.bird.bird_pos, self.tnts.items)
             if lost_bomb != 0 or lost_tnt != 0:
                 self.running = False
+                return False
 
             # Display message if collision result is greater than 0 and for the specified duration
             if fruit_collision > 0:
@@ -257,3 +330,4 @@ class Game:
             # Based on our height decide if we have lost
             if (self.bird.bird_pos.y >= self.screen_height):
                 self.running = False
+                return False

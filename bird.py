@@ -29,10 +29,10 @@ class Bird:
     def move(self, keys, dt):
         self.bird_pos.y += self.vel_y * dt
 
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             self.bird_pos.x -= 300 * dt
             self.direction = "left"
-        if keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT]:
             self.bird_pos.x += 300 * dt
             self.direction = "right"
 
