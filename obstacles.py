@@ -53,3 +53,47 @@ class Bombs:
             self.screen.blit(self.bomb_image,
                              (bomb["x_cor"], bomb["y_cor"]))
         self.current_bombs = len(self.bombs)
+
+
+class TNT:
+    def __init__(self, screen, screen_width, screen_height, max_tnt=2):
+        self.max_tnts = max_tnt
+        self.tnts = []
+        self.screen = screen
+        self.current_tnts = 0
+        self.last_time = time.time()
+        self.delta = 5
+        self.velocity = 1
+        self.tnt_image = pygame.transform.scale(pygame.image.load(
+            "./images/tnt.png").convert_alpha(), (40, 40))
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+    def generate(self, bird_position):
+        if self.current_tnts >= self.max_tnts:
+            return
+        current_time = time.time()
+        if has_time_passed(self.last_time, self.delta):
+            self.last_time = current_time
+            # Minimum distance between bomb and bird
+            min_distance = 50
+            while True:
+                new_y_coordinate = 0
+                new_x_coordinate = random.uniform(
+                    50, self.screen_width - 50)
+                # Calculate distance between bomb and bird
+                distance = new_x_coordinate - bird_position.x
+                if distance >= min_distance:
+                    break
+            generated_time = time.time()
+            self.tnts.append(
+                {"type": 1, "time": generated_time, "x_cor": new_x_coordinate, "y_cor": new_y_coordinate})
+            self.current_tnts += 1
+
+    def display(self):
+        for tnt in self.tnts:
+            tnt["y_cor"] += self.velocity
+            self.screen.blit(self.tnt_image, (tnt["x_cor"], tnt["y_cor"]))
+            if (tnt["y_cor"] >= self.screen_height):
+                self.tnts.remove(tnt)
+        self.current_tnts = len(self.tnts)
