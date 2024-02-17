@@ -25,14 +25,13 @@ class Game:
         self.rect_color = (139, 69, 19)  # Brown color (RGB)
 
         # Create bird instance
-        self.bird = Bird(40, 40, self.screen)
+        self.bird = None
 
         # Fruits
-        self.fruits = Fruits(self.screen)
-
+        self.fruits = None
         # Bombs and tnts
-        self.bombs = Bombs(self.screen, self.screen_width, self.screen_height)
-        self.tnts = TNT(self.screen, self.screen_width, self.screen_height)
+        self.bombs = None
+        self.tnts = None
 
         # Setting window title
         pygame.display.set_caption('Flying Bird')
@@ -102,8 +101,14 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         if option == 1:
-                            self.bombs.bombs.clear()
-                            self.tnts.tnts.clear()
+                            self.running = True
+                            # Create new instances
+                            self.bird = Bird(40, 40, self.screen)
+                            self.fruits = Fruits(self.screen)
+                            self.bombs = Bombs(
+                                self.screen, self.screen_width, self.screen_height)
+                            self.tnts = TNT(
+                                self.screen, self.screen_width, self.screen_height)
                             self.game_loop()
                             update = True
                         elif option == 2:
@@ -209,7 +214,7 @@ class Game:
             # Draw bird texture
             self.bird.display()
 
-            # Draw & generate fruits textures
+            # Draw & generate all textures
             self.fruits.generate()
             self.fruits.display()
             self.bombs.generate(self.bird.bird_pos)
@@ -218,20 +223,21 @@ class Game:
             self.tnts.generate(self.bird.bird_pos)
             self.tnts.display()
 
-            # Check for collision
-            result = check_if_collision(self.bird.bird_pos, self.fruits.fruits)
+            # Check for collisions
+            fruit_collision = check_if_collision(
+                self.bird.bird_pos, self.fruits.fruits)
             lost_bomb = check_if_collision(
-                self.bird.bird_pos, self.bombs.bombs)
+                self.bird.bird_pos, self.bombs.items)
             lost_tnt = check_if_collision(
-                self.bird.bird_pos, self.tnts.tnts)
+                self.bird.bird_pos, self.tnts.items)
             if lost_bomb != 0 or lost_tnt != 0:
                 self.running = False
 
             # Display message if collision result is greater than 0 and for the specified duration
-            if result > 0:
-                self.message = result
+            if fruit_collision > 0:
+                self.message = fruit_collision
                 self.collision_time = time.time()
-                self.points += result
+                self.points += fruit_collision
 
             if self.message_duration > self.current_time - self.collision_time and self.message != 0:
                 display_text(str(self.message), 25, self.bird.bird_pos.x + 20,

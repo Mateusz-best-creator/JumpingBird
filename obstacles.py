@@ -3,25 +3,41 @@ import random
 import math
 import time
 from utils.utilities import has_time_passed
+import abc
 
 
-class Bombs:
-    def __init__(self, screen, screen_width, screen_height, max_bombs=5):
-        self.max_bombs = max_bombs
-        self.bombs = []
-        self.current_bombs = 0
-        self.delta = 2.5
+class Obstacles(abc.ABC):
+    def __init__(self, screen, screen_width, screen_height, delta, filename, time):
         self.screen = screen
-        self.last_time = time.time()
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.bomb_image = pygame.transform.scale(pygame.image.load(
-            "./images/bomb.png").convert_alpha(), (40, 40))
+        self.items = []
+        self.delta = delta
+        self.item_image = pygame.transform.scale(
+            pygame.image.load(filename).convert_alpha(), (40, 40))
+        self.last_time = time
+        self.current_items = 0
+
+    @abc.abstractmethod
+    def generate(self, bird_position):
+        pass
+
+    @abc.abstractmethod
+    def display(self):
+        pass
+
+
+class Bombs(Obstacles):
+    def __init__(self, screen, screen_width, screen_height, max_bombs=5):
+        super().__init__(screen, screen_width, screen_height,
+                         2.5, "./images/bomb.png", time.time())
+        self.max_bombs = max_bombs
 
     def generate(self, bird_position):
-        if self.current_bombs >= self.max_bombs:
+        if self.current_items >= self.max_bombs or time.time() - self.last_time < 5:
             return
         current_time = time.time()
+        print(current_time)
         if has_time_passed(self.last_time, self.delta):
             self.last_time = current_time
             # Minimum distance between bomb and bird
@@ -36,44 +52,37 @@ class Bombs:
                 if distance >= min_distance:
                     break
             generated_time = time.time()
-            self.bombs.append(
+            self.items.append(
                 {"type": 1, "time": generated_time, "x_cor": new_x_coordinate, "y_cor": new_y_coordinate})
-            self.current_bombs += 1
+            self.current_items += 1
 
     def update(self):
         now = time.time()
-        for bomb in self.bombs:
+        for bomb in self.items:
             # If bomb is longer than 10 seconds on the board we want to remove it
             if now - bomb["time"] > 10:
-                self.bombs.remove(bomb)
-        self.current_bombs = len(self.bombs)
+                self.items.remove(bomb)
+        self.current_items = len(self.items)
 
     def display(self):
-        for bomb in self.bombs:
-            self.screen.blit(self.bomb_image,
+        for bomb in self.items:
+            self.screen.blit(self.item_image,
                              (bomb["x_cor"], bomb["y_cor"]))
-        self.current_bombs = len(self.bombs)
+        self.current_items = len(self.items)
 
 
-class TNT:
+class TNT(Obstacles):
     def __init__(self, screen, screen_width, screen_height, max_tnt=2):
+        super().__init__(screen, screen_width, screen_height,
+                         5, "./images/tnt.png", time.time())
         self.max_tnts = max_tnt
-        self.tnts = []
-        self.screen = screen
-        self.current_tnts = 0
-        self.last_time = time.time()
-        self.delta = 5
         self.velocity = 1
-        self.tnt_image = pygame.transform.scale(pygame.image.load(
-            "./images/tnt.png").convert_alpha(), (40, 40))
-        self.screen_width = screen_width
-        self.screen_height = screen_height
 
     def generate(self, bird_position):
-        if self.current_tnts >= self.max_tnts:
+        if self.current_items >= self.max_tnts:
             return
         current_time = time.time()
-        if has_time_passed(self.last_time, self.delta):
+        if has_time_passed(self.last_time, self.delta) and current_time >= 5:
             self.last_time = current_time
             # Minimum distance between bomb and bird
             min_distance = 50
@@ -86,14 +95,14 @@ class TNT:
                 if distance >= min_distance:
                     break
             generated_time = time.time()
-            self.tnts.append(
+            self.items.append(
                 {"type": 1, "time": generated_time, "x_cor": new_x_coordinate, "y_cor": new_y_coordinate})
-            self.current_tnts += 1
+            self.current_items += 1
 
     def display(self):
-        for tnt in self.tnts:
+        for tnt in self.items:
             tnt["y_cor"] += self.velocity
-            self.screen.blit(self.tnt_image, (tnt["x_cor"], tnt["y_cor"]))
+            self.screen.blit(self.item_image, (tnt["x_cor"], tnt["y_cor"]))
             if (tnt["y_cor"] >= self.screen_height):
-                self.tnts.remove(tnt)
-        self.current_tnts = len(self.tnts)
+                self.items.remove(tnt)
+        self.current_items = len(self.items)
