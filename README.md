@@ -50,4 +50,5 @@ pyinstaller main.py
 - Press the space bar to jump while playing.
 - Use the left and right arrow keys to move your character.
 
+Try to gather as many fruits as you can and avoid bombs and TNTs! Aim to progress through all three levels, each with different thresholds (the number of points required to win).
 Good luck and have fun!
