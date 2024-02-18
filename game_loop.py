@@ -69,7 +69,7 @@ class Game:
         self.tnts = TNT(
             self.screen, self.screen_width, self.screen_height)
 
-    def draw_menu(self, options, option_selected):
+    def draw_menu(self, options, option_selected, background):
         rect_width = 200
         rect_height = 50
         rect_spacing = 50  # Spacing between rectangles
@@ -79,8 +79,7 @@ class Game:
         # Calculate the starting y-coordinate for the first rectangle
         start_y = (self.screen_height - total_height) // 2 + 100
 
-        self.screen.blit(pygame.image.load(
-            "./images/start_background.png").convert(), (0, 0))
+        self.screen.blit(background, (0, 0))
         display_text("Flying Bird", 110, self.screen_width / 2,
                      100, self.screen, self.title_font, (0, 0, 0))
 
@@ -105,11 +104,14 @@ class Game:
     def congratulations_page(self, level_index, level_data, color=None):
         if not color:
             color = self.WHITE
-        image = self.start_background_image = pygame.image.load(
-            level_data[level_index]["background"]).convert()
-        self.screen.blit(image, (0, 0))
+        background_image = pygame.image.load(
+            level_data["background"]).convert()
+        self.screen.blit(background_image, (0, 0))
         display_text(f"Congratulations for completing level {level_index}!",
-                     32, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font, color)
+                     28, self.screen_width / 2, self.screen_height / 2, self.screen, self.casual_font, color)
+        if (level_index == 3):
+            display_text(f"Congratulations for completing all levels!",
+                         28, self.screen_width / 2, self.screen_height / 2 + 30, self.screen, self.casual_font, color)
         time.sleep(3)
 
     def check_if_update(self, update, initial, option, texts):
@@ -144,14 +146,10 @@ class Game:
                              self.screen, self.casual_font, (0, 0, 0))
             pygame.display.update()
 
-    def start_page(self):
+    def start(self):
         texts = ["Play", "Instructions", "Quit"]
+        run = update = initial = True
         option = 1
-        run = True
-        update = False
-        initial = True
-        print("Calling start_page!")
-        level = 1
 
         while run:
             self.check_if_update(update, initial, option, texts)
@@ -162,60 +160,35 @@ class Game:
                     pygame.quit()
                     return
                 elif event.type == pygame.KEYDOWN:
+                    update = True
                     if event.key == pygame.K_RETURN:
                         if option == 1:
-                            self.running = True
-                            self.init_textures()
-                            return_value = self.game_loop(levels_data[level])
-                            if return_value:
-                                self.congratulations_page(level, levels_data)
-                                option = 1
-                                level = level % 3 + 1
-
-                                # Absolutely ugly I am sorry
-                                self.init_textures()
-                                self.bombs.items.clear()
-                                self.fruits.fruits.clear()
-                                self.tnts.items.clear()
-                                return_value = self.game_loop(
-                                    levels_data[2])
-                                if return_value:
-                                    self.congratulations_page(
-                                        level, levels_data)
-                                    option = 1
-                                    level = level % 3 + 1
-
-                                    self.bombs.items.clear()
-                                    self.fruits.fruits.clear()
-                                    self.tnts.items.clear()
-                                    self.init_textures()
-                                    return_value = self.game_loop(
-                                        levels_data[level])
-
-                                    if return_value:
-                                        self.congratulations_page(
-                                            level, levels_data)
-                                        option = 1
-                                        level = level % 3 + 1
-                                        self.screen.blit(
-                                            self.start_background_image, (0, 0))
-
-                            update = True
+                            self.levels()
                         elif option == 2:
                             self.instructions_page()
-                            update = True
                         else:
                             pygame.quit()
                     elif event.key == pygame.K_UP:
                         if option == 0:
                             option = 1
                         option = max(1, option - 1)
-                        update = True
                     elif event.key == pygame.K_DOWN:
                         if option == 0:
                             option = 1
                         option = min(len(texts), option + 1)
-                        update = True
+
+    def levels(self):
+        for i in range(1, 4):
+            self.init_textures()
+            self.bombs.items.clear()
+            self.fruits.fruits.clear()
+            self.tnts.items.clear()
+            # Returns True if player won and False otherwise, False means that we go to the start page
+            result = self.game_loop(levels_data[i])
+            if not result:
+                break
+            else:
+                self.congratulations_page(i, levels_data[i])
 
     def start_counter(self, level_data):
         # Fully transparent (RGBA color with alpha value 0)
@@ -277,14 +250,14 @@ class Game:
                     if event.key == pygame.K_RETURN:
                         return
 
-    def continue_page(self, level_data):
+    def continue_page(self, background):
         options = ["Play Again", "Main Page", "Quit"]
         option_selected = 1
         updated = True
-
+        self.screen.blit(background, (0, 0))
         while True:
             if updated:
-                self.draw_menu(options, option_selected)
+                self.draw_menu(options, option_selected, background)
                 updated = False
 
             for event in pygame.event.get():
@@ -292,6 +265,7 @@ class Game:
                     pygame.quit()
                     return
                 elif event.type == pygame.KEYDOWN:
+                    updated = True
                     if event.key == pygame.K_RETURN:
                         if option_selected == 1:
                             return 1
@@ -300,10 +274,8 @@ class Game:
                         elif option_selected == 3:
                             pygame.quit()
                     elif event.key == pygame.K_UP:
-                        updated = True
                         option_selected = max(1, option_selected - 1)
                     elif event.key == pygame.K_DOWN:
-                        updated = True
                         option_selected = min(
                             len(options), option_selected + 1)
 
@@ -312,6 +284,7 @@ class Game:
         threshold = level_data["threshold"]
         background_image = pygame.image.load(
             level_data["background"]).convert()
+        self.running = True
 
         while self.running:
             if (self.dt > 1):
@@ -345,8 +318,8 @@ class Game:
                 self.bird.bird_pos, self.bombs.items)
             lost_tnt = check_if_collision(
                 self.bird.bird_pos, self.tnts.items)
-            if lost_bomb != 0 or lost_tnt != 0:
-                continue_result = self.continue_page(level_data)
+            if lost_bomb != 0 or lost_tnt != 0 or self.bird.bird_pos.y >= self.screen_height:
+                continue_result = self.continue_page(background_image)
                 if continue_result == 1:
                     self.init_textures()
                     self.start_counter(level_data)
@@ -374,16 +347,6 @@ class Game:
             # flip() the display to put your work on screen
             pygame.display.flip()
             self.dt = self.clock.tick(60) / 1000
-
-            # Based on our height decide if we have lost
-            if self.bird.bird_pos.y >= self.screen_height:
-                continue_result = self.continue_page(level_data)
-                if continue_result == 1:
-                    self.init_textures()
-                    self.start_counter(level_data)
-                else:
-                    self.running = False
-                    return False
 
             # Decide if we have won
             if self.bird.points > threshold:
