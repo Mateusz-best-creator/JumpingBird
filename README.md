@@ -45,12 +45,6 @@ Then, you can create the executable by running:
 pyinstaller main.py
 ```
 
-
-Once this process is complete, navigate to `./dist/main` directory, where you will find the `main.exe` file. Move this file to your current working directory so it knows where all the images, fonts, and sounds are located. After moving the file, simply run:
-```
-./main.exe
-```
-
 ## How to Play
 - Use the arrow keys to navigate through the start page.
 - Press the space bar to jump while playing.
