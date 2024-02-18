@@ -73,7 +73,7 @@ class TNT(Obstacles):
         super().__init__(screen, screen_width, screen_height,
                          5, "./images/tnt.png", time.time())
         self.max_tnts = max_tnt
-        self.velocity = 1
+        self.velocity = 2
 
     def generate(self, bird_position):
         if self.current_items >= self.max_tnts:
@@ -86,7 +86,7 @@ class TNT(Obstacles):
             while True:
                 new_y_coordinate = 0
                 new_x_coordinate = random.uniform(
-                    50, self.screen_width - 50)
+                    20, self.screen_width - 50)
                 # Calculate distance between bomb and bird
                 distance = new_x_coordinate - bird_position.x
                 if distance >= min_distance:

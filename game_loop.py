@@ -4,12 +4,12 @@ from bird import Bird
 from fruits import Fruits
 from obstacles import Bombs, TNT
 from utils.utilities import check_if_collision, display_text
-import textwrap
+import os
 
 levels_data = {
-    1: {"background": "./images/background_level_1.png", "threshold": 100},
-    2: {"background": "./images/background_level_2.png", "threshold": 100},
-    3: {"background": "./images/background_level_3.png", "threshold": 100}
+    1: {"background": "./images/background_level_1.png", "threshold": 1000},
+    2: {"background": "./images/background_level_2.png", "threshold": 4500},
+    3: {"background": "./images/background_level_3.png", "threshold": 8000}
 }
 
 
@@ -21,6 +21,8 @@ class Game:
 
         # pygame setup
         pygame.init()
+        pygame.mixer.init()
+
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height))
         self.clock = pygame.time.Clock()
@@ -59,6 +61,25 @@ class Game:
             pygame.image.load("./images/arrow.png").convert_alpha(), (120, 70))
         self.WHITE = (255, 255, 255)
         self.BLACK = (0, 0, 0)
+
+        # Load sounds
+        self.sound_path = "./sounds/"
+        self.sound_effects = {
+            "start": pygame.mixer.Sound(os.path.join(self.sound_path, "start.wav")),
+            "jump": pygame.mixer.Sound(os.path.join(self.sound_path, "jump.wav")),
+            "lost": pygame.mixer.Sound(os.path.join(self.sound_path, "lost.wav")),
+            "points": pygame.mixer.Sound(os.path.join(self.sound_path, "points.wav"))
+        }
+
+    def play_sound(self, sound_name):
+        if sound_name in self.sound_effects:
+            self.sound_effects[sound_name].play()
+        else:
+            print(f"Sound '{sound_name}' not found.")
+
+    def stop_sound(self, sound_name):
+        if sound_name in self.sound_effects:
+            self.sound_effects[sound_name].stop()
 
     def init_textures(self):
         # Create new instances
@@ -146,11 +167,18 @@ class Game:
                              self.screen, self.casual_font, (0, 0, 0))
             pygame.display.update()
 
+    def get_sound_length(self, sound_name):
+        if sound_name in self.sound_effects:
+            return self.sound_effects[sound_name].get_length()
+        else:
+            print(f"Sound '{sound_name}' not found.")
+            return None
+
     def start(self):
         texts = ["Play", "Instructions", "Quit"]
         run = update = initial = True
         option = 1
-
+        self.play_sound("start")
         while run:
             self.check_if_update(update, initial, option, texts)
             initial = update = False
@@ -163,6 +191,7 @@ class Game:
                     update = True
                     if event.key == pygame.K_RETURN:
                         if option == 1:
+                            self.stop_sound("start")
                             self.levels()
                         elif option == 2:
                             self.instructions_page()
@@ -186,6 +215,7 @@ class Game:
             # Returns True if player won and False otherwise, False means that we go to the start page
             result = self.game_loop(levels_data[i])
             if not result:
+                self.play_sound("start")
                 break
             else:
                 self.congratulations_page(i, levels_data[i])
@@ -301,6 +331,9 @@ class Game:
             self.screen.blit(background_image, (0, 0))
             # Draw bird texture
             self.bird.display()
+            if self.bird.just_jumped:
+                self.play_sound("jump")
+            self.bird.just_jumped = False
 
             # Draw & generate all textures
             self.fruits.generate()
@@ -314,11 +347,14 @@ class Game:
             # Check for collisions
             fruit_collision = check_if_collision(
                 self.bird.bird_pos, self.fruits.fruits)
+            if fruit_collision:
+                self.play_sound("points")
             lost_bomb = check_if_collision(
                 self.bird.bird_pos, self.bombs.items)
             lost_tnt = check_if_collision(
                 self.bird.bird_pos, self.tnts.items)
             if lost_bomb != 0 or lost_tnt != 0 or self.bird.bird_pos.y >= self.screen_height:
+                self.play_sound("lost")
                 continue_result = self.continue_page(background_image)
                 if continue_result == 1:
                     self.init_textures()
@@ -349,5 +385,5 @@ class Game:
             self.dt = self.clock.tick(60) / 1000
 
             # Decide if we have won
-            if self.bird.points > threshold:
+            if self.bird.points >= threshold:
                 return True

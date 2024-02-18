@@ -22,10 +22,12 @@ class Bird:
         self.points = 0
 
         self.direction = "right"
+        self.just_jumped = False
 
     def jump(self):
         self.vel_y = -500
         self.last_jump_time = time.time()
+        self.just_jumped = True
 
     def move(self, keys, dt):
         self.bird_pos.y += self.vel_y * dt
