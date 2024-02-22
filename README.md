@@ -1,10 +1,10 @@
 # JumpingBird
 
 ## Screenshots
-![Screenshot 1](screenshots/sc1.png)
+<img src="screenshots/sc1.png" alt="start page" width="600" height="800">
 *Start page*
 
-![Screenshot 2](screenshots/sc2.png)
+<img src="screenshots/sc2.png" alt="level example 2" width="600" height="800">
 *Level*
 
 ## Requirements
