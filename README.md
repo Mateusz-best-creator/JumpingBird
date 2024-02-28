@@ -1,11 +1,13 @@
 # JumpingBird
 
 ## Screenshots
+**Start page**
 <img src="screenshots/sc1.png" alt="start page" width="600" height="800">
-*Start page*
 
+
+**Level**
 <img src="screenshots/sc2.png" alt="level example 2" width="600" height="800">
-*Level*
+
 
 ## Requirements
 To run this game, you need to have Python and Pygame installed on your system.
